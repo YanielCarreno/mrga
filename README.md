@@ -1,5 +1,5 @@
 ***************************************************************
-AAMAS-2020 repository                                       
+MRGA Strategy repository                                       
 ***************************************************************
 
 This repository contains the ROS-MRGA code, the domain and problems used in:
@@ -8,36 +8,37 @@ This repository contains the ROS-MRGA code, the domain and problems used in:
 
 The implementation is devided in two parts:
 
+====================================
 1. GOALS ALLOCATION
-
+====================================
 1.1 Compilation:
 
-Select or create a catkin workspace:
+   Select or create a catkin workspace:
 
-mkdir -p mrga_ws/src
-cd mrga_ws/
+         mkdir -p mrga_ws/src
+         cd mrga_ws/
 
-Get the code:
+   Get the code:
 
-cd src/
-git clone https://github.com/MA-TemporalP/AAMAS-2020.git
+         cd src/
+         git clone https://github.com/YanielCarreno/MRGA.git
 
-Compile everything:
+   Compile everything:
 
-catkin build
+         catkin build
 
 1.2 To run an example:
 
-roslaunch mrga mrga_strategy.launch
+         roslaunch mrga mrga_strategy.launch
 
 1.3 The results:
 
 The allocation_solution.txt file located in the mrga package shows the allocation's results. This results can be added to the PDDL problem files to generate plans using the steps in the TASK PLANNING section.
 
 
-
-
+====================================
 2. TASK PLANNING
+====================================
 
 2.1 First folder (constrained_domain) contains the domain and problems that consider 
    the predicate "robot_can_act" to implement the plan which were generated using the 
