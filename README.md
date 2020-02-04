@@ -1,5 +1,5 @@
 ***************************************************************
-##MRGA Strategy repository                                       
+## MRGA Strategy repository                                       
 ***************************************************************
 
 This repository contains the ROS-MRGA code, the domain and problems used in:
