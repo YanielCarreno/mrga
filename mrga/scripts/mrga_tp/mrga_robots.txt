@@ -1,0 +1,6 @@
+husky0[cap1, cap2, cap3, cap4, cap6, cap7, cap8, cap10]{wpg}
+husky1[cap2, cap3, cap4,cap7, cap10]{wpg}
+husky2[cap2, cap3, cap4, cap6, cap8, cap10]{wpg}
+husky3[cap1, cap2, cap3, cap4,cp6, cap8, cap10]{wpg}
+uav0[cap1, cap4, cap5, cap9, cap10]{wpa}
+uav1[cap1, cap2, cap3, cap4, cap5, cap9, cap10]{wpa}

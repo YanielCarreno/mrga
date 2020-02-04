@@ -1,0 +1,54 @@
+wpg0[22.3116, 14.3531, 0.66,NE_out_2,ground,robot_initial]{husky0}               ; position of the husky (wpg0 - wpg9) the initial positio
+wpg1[22.31, 17.07, 0.88,NE_out_3,ground,robot_initial]{husky1}                   ; is also the possible points to recharge
+wpg2[14.2332, -22.0538, 0.66,SE_out_2,ground,robot_initial]{husky2}
+wpg3[16.95, -22.0669, 0.88,SE_out_3,ground,robot_initial]{husky3}
+wpg20[22.296, 1.47314, 0.66,NE_out_1,ground,goal]                                ; goals coordinates (wpg20-wpg50) in ground floor
+wpg21[12.53, 17.07, 0.88,NE_out_4,ground,goal]
+wpg22[10.3, 18.4, 0.88,NE_out_5,ground,goal]
+wpg23[2.56, 18.40, 0.88,NE_out_6,ground,goal]
+wpg24[18.8561, 1.47728, 0.66,NE_down_ramp_0_1,ground,goal]
+wpg25[14.1361, 1.48296, 0.66,NE_wp_0_1,ground,goal]
+wpg26[6.57606, 1.49206, 0.66,NE_wp_0_2,ground,goal]
+wpg27[-1.5, 22.34, 0.66,NW_out_1,ground,goal]
+wpg28[-14.38, 22.34, 0.66,NW_out_2,ground,goal]
+wpg29[-16.9854, 22.3604, 0.88,NW_out_3,ground,goal]
+wpg30[-17.0225, 12.5804, 0.88,NW_out_4,ground,goal]
+wpg31[-18.361, 10.3555, 0.88,NW_out_5,ground,goal]
+wpg32[-18.3904, 2.61558, 0.88,NW_out_6,ground,goal]
+wpg33[-1.5, 18.9, 0.66,NW_down_ramp_0_1,ground,goal]
+wpg34[-21.9446, -1.26094,0.66,SW_out_1,ground,goal]
+wpg35[-22.0837, -14.1402,0.66,SW_out_2,ground,goal]
+wpg36[-22.1082, -16.8569,0.88,SW_out_3,ground,goal]
+wpg37[-18.5048, -1.29808,0.66,SW_down_ramp_0_1,ground,goal]
+wpg38[1.35351, -21.9689, 0.66,SE_out_1,ground,goal]
+wpg39[17.0027, -12.287, 0.88,SE_out_4,ground,goal]
+wpg40[18.3448, -10.0642, 0.88,SE_out_5,ground,goal]
+wpg41[18.3865, -2.32435, 0.88,SE_out_6,ground,goal]
+wpg42[1.37619, -18.529, 0.66,SE_down_ramp_0_1,ground,goal]
+wpg50[16.0361, 1.48067, 6.06,NE_wp_1_2,ground,goal]                              ; goals coordinates (wpg40 - ...) in the first floor
+wpg51[-14.38, 6.62, 6.06,NW_wp_1_4,ground,goal]
+wpg52[-15.685, -1.32853, 6.06,SW_wp_1_2,ground,goal]
+wpg53[-6.22556, -1.43066, 6.06,SW_wp_1_3,ground,goal]
+wpg54[14.3369, -6.33414, 6.06,SE_wp_1_4,ground,goal]
+wpg55[11.556, -18.5961, 11.06,SE_up_ramp_1_2,ground,goal]
+wpa0[25, 25, 0.88,NE_out_0_1,air,robot_initial]{uav0}                            ; position of the auv (wpa0 - wpa9)
+wpa1[-25, 25, 0.88,NW_out_0_1,air,robot_initial]{uav1}
+wpa2[-25, -25, 0.88,SW_out_0_1,air,robot_initial]{uav2}
+wpa3[25, -25, 0.88,SE_out_0_1,air,robot_initial]{uav3}
+wpa10[-25, -25, 0.88,SW_out_0_1,air,goal]                                        ; goals coordinates (wpa10 - ...)
+wpa11[25, -25, 0.88,SE_out_0_1,air,goal]
+wpa12[2.56, 25, 16,NE_out_3_2,air,goal]
+wpa13[-25, 2.61558, 16,NW_out_3_2,air,goal]
+wpa14[25, -25, 16,SE_out_3_1,air,goal]
+wpa15[25, -2.32435, 16,SE_out_3_2,air,goal]
+wpa16[2.56, 3.1, 16,NE_out_3_3,air,goal]
+wpa17[-3.09063, 2.55748, 16,NW_out_3_3,air,goal]
+wpa18[-2.2251, -3.07714, 16,SW_out_3_3,air,goal]
+wpa19[3.0868, -2.24188, 16,SE_out_3_3,air,goal]
+wpa20[-25, 2.61558, 26,NW_out_6_2,air,goal]
+wpa21[-2.37188, -25, 26,SW_out_6_2,air,goal]
+wpa22[25, -2.32435, 26,SE_out_6_2,air,goal]
+wpa23[2.56, 3.1, 26,NE_out_6_3,air,goal]
+wpa24[-3.09063, 2.55748, 26,NW_out_6_3,air,goal]
+wpa25[-2.2251, -3.07714, 26,SW_out_6_3,air,goal]
+wpa26[-2.37188, -25, 16,SW_out_3_2,air,goal]

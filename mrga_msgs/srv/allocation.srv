@@ -1,0 +1,5 @@
+bool start
+int32 fact_number
+---
+string allocation_robot
+string allocation_point

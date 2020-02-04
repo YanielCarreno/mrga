@@ -1,0 +1,37 @@
+# makespan_static_actions.yaml file
+
+makespan:
+  explored: 10
+  poi_observation: 15
+  poi_image_taken: 5
+  poi_valve_inspection: 20
+  poi_temperature_analysis: 10
+  poi_pressure_analysis: 10
+  poi_valve_turned: 30
+
+# capability required to implement a goal
+capability:
+  poi_observation: cap4
+  poi_image_taken: cap5
+  poi_valve_inspection: cap6
+  poi_temperature_analysis: cap7
+  poi_pressure_analysis: cap8
+  poi_valve_turned: cap9
+  explored: cap10
+
+redundancy:
+  poi_observation:
+    - none
+  poi_image_taken:
+    - cap1
+    - cap2
+  poi_valve_inspection:
+    - none
+  poi_temperature_analysis:
+    - cap3
+  poi_pressure_analysis:
+    - none
+  poi_valve_turned:
+    - none
+  explored:
+    - none

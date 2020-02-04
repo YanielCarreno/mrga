@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- roadmap generation node-->
+	<arg name="waypoint_file"                default="$(find mrga)/scripts/mrga_tp/mrga_waypoints.txt" />
+	<arg name="goal_file"                    default="$(find mrga)/scripts/mrga_tp/mrga_goals.txt" />
+	<arg name="robot_file"                   default="$(find mrga)/scripts/mrga_tp/mrga_robots.txt" />
+	<arg name="fixed_frame"                  default="world" />
+	<arg name="ontology"                     default="ontology_mrga.yaml" />
+
+	<node name="mrga_strategy" pkg="mrga" type="MRGAAlgorithm" respawn="false" output="screen">
+		<param name="waypoint_file"         value="$(arg waypoint_file)" />
+		<param name="goal_file"             value="$(arg goal_file)" />
+		<param name="robot_file"            value="$(arg robot_file)" />
+	  <param name="fixed_frame"           value="$(arg fixed_frame)" />
+	</node>
+
+	<node name="capabilities_analyser" pkg="mrga" type="capabilities_analyser.py" respawn="false" output="screen">
+		<param name="mission_constrains_directory"    value="$(find mrga)/config/" />
+		<param name="ontology_directory"              value="$(arg ontology)" />
+	</node>
+
+	<node name="regions_delimiter" pkg="mrga" type="regions_delimiter.py" respawn="false" output="screen">
+		<param name="mission_constrains_directory"    value="$(find mrga)/config/" />
+		<param name="ontology_directory"              value="$(arg ontology)" />
+	</node>
+
+	<node name="facts_allocation" pkg="mrga" type="facts_allocation.py" respawn="false" output="screen">
+		<param name="mission_constrains_directory"       value="$(find mrga)/config/" />
+	</node>
+</launch>
