@@ -8,9 +8,11 @@ This repository contains the ROS-MRGA code, the domain and problems used in:
 
 The implementation is devided in two parts:
 
-====================================
+
+****************************
 1. GOALS ALLOCATION
-====================================
+****************************
+
 1.1 Compilation:
 
    Select or create a catkin workspace:
@@ -36,9 +38,9 @@ The implementation is devided in two parts:
 The allocation_solution.txt file located in the mrga package shows the allocation's results. This results can be added to the PDDL problem files to generate plans using the steps in the TASK PLANNING section.
 
 
-====================================
+****************************
 2. TASK PLANNING
-====================================
+****************************
 
 2.1 First folder (constrained_domain) contains the domain and problems that consider 
    the predicate "robot_can_act" to implement the plan which were generated using the 
