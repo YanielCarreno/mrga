@@ -7,9 +7,7 @@ This repository contains the ROS-MRGA code, the domain and problems used in:
 The implementation is devided in two parts:
 
 
-****************************
-# 1. GOALS ALLOCATION
-****************************
+### 1. GOALS ALLOCATION
 
 1.1 Compilation:
 
@@ -36,9 +34,8 @@ The implementation is devided in two parts:
 The allocation_solution.txt file located in the mrga package shows the allocation's results. This results can be added to the PDDL problem files to generate plans using the steps in the TASK PLANNING section.
 
 
-****************************
-# 2. TASK PLANNING
-****************************
+### 2. TASK PLANNING
+
 
 2.1 First folder (constrained_domain) contains the domain and problems that consider 
    the predicate "robot_can_act" to implement the plan which were generated using the 
@@ -68,10 +65,10 @@ The allocation_solution.txt file located in the mrga package shows the allocatio
 If you are using this work for your research, please cite:
 ```
 @InProceedings{carreno2020task,
-  Title                    = {Task Allocation Strategy for Heterogeneous Robot Teams in Offshore Missions},
-  Author                   = {Carreno, Yaniel and Pairet, {\`E}ric and Petillot, Yvan and Petrick, Ronald PA},
-  Booktitle                = {Proceedings of the 2020 International Conference on Autonomous Agents and Multiagent Systems},
-  Year                     = {2020}
+  Title  = {Task Allocation Strategy for Heterogeneous Robot Teams in Offshore Missions},
+  Author = {Carreno, Yaniel and Pairet, {\`E}ric and Petillot, Yvan and Petrick, Ronald PA},
+  Booktitle = {Proceedings of the 2020 International Conference on Autonomous Agents and Multiagent Systems},
+  Year = {2020}
 }
 }
 ```
