@@ -229,16 +229,13 @@
           )
 
 )
-(:durative-action surface_point_allocation
- :parameters (?r - robot ?wpi  ?wpf - observation_point)
- :duration ( = ?duration 1)
- :condition (and
-           (over all (robot_can_act ?r  ?wpf))
-           (over all (close_to ?wpi ?wpf))
-           (over all (at ?r ?wpi))
-           )
- :effect (and
-        (at end (surface_point_at ?r ?wpf))
-        )
+(:action surface_point_allocation
+:parameters (?r - robot ?wpi  ?wpf - waypoint)
+:precondition (and
+           (robot_can_act ?r  ?wpf)
+           (close_to ?wpi ?wpf)
+           (at ?r ?wpi))
+  :effect (surface_point_at ?r ?wpf)
+          
 )
 )
