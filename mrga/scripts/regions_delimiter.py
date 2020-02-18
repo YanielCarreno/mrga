@@ -10,6 +10,7 @@ import cv2
 import time
 import re
 import yaml
+import csv
 from std_msgs.msg import String
 from scipy.optimize import linear_sum_assignment
 from collections import Counter
@@ -17,24 +18,25 @@ from linecache import getline
 from std_srvs.srv import Empty, EmptyResponse
 from mrga_msgs.srv import RegionsDelimiter, RegionsDelimiterResponse
 
-# Import the library to read csv
-import csv
-
 class regions_delimiter(object):
 
     def __init__(self):
-        '''
-        constructor
-        '''
+        #=======================================================================
+        # constructor
+        #=======================================================================
         rospy.init_node('regions_delimiter')
         rospy.Service('regions_delimiter', RegionsDelimiter, self.serviceCall)
-
-        # Has the goal been loaded?
+        #=======================================================================
+        # Initialisation
+        #=======================================================================
         self.params_loaded = False
         self.allocation_finished = False
         self.constraints_array = []
 
     def serviceCall(self, req):
+        #=======================================================================
+        # System inputs to stablish the regions and distribute the goals
+        #=======================================================================
         self.mission_constrains_directory = rospy.get_param('~mission_constrains_directory')
         self.ontology_directory = rospy.get_param('~ontology_directory')
         self.allocation_approach = req.allocation_approach
@@ -44,11 +46,11 @@ class regions_delimiter(object):
         self.center_no = req.robots_number
         self.robots_number = req.robots_number
         self.total_iteration = 500
-
-        '''
-        Task Allocation strategy considering homogeneous robots which is based on k-means algorithm
-        info: we start assuming we know the coordinates of mission goals and number of robots available
-        '''
+        #=======================================================================
+        # Task Allocation strategy considering heterogeneous robots which is
+        #  based on k-means algorithm and task makespans
+        #  info: we start assuming we know the coordinates of mission goals
+        #=======================================================================
         if(self.allocation_approach.find("MRGA") != -1):
             print("***************************************************************************************")
             print("* REGIONS DELIMITER:                                                                  *")
@@ -61,15 +63,21 @@ class regions_delimiter(object):
             self.load_cap_analyser_results()
             if(self.params_loaded):
                 self.k_means()
-                self.cluster_allocation()
-                self.hrta_strategy()
-                self.goal_distribution()
+                self.mrga_strategy()
+                self.goal_allocation()
                 self.save_goals()
                 return RegionsDelimiterResponse(self.allocation_finished, len(self.allocation_results))
 
         else:
             print('MRGA: Fleet characteristics were not properly defined ')
-    def hrta_strategy(self):
+    def mrga_strategy(self):
+        #=======================================================================
+        # Implement robots distribution in the environment by calculating
+        # the number of goals each robot can execut in each area and optimise
+        # the distribution based on this results
+        #=======================================================================
+        # Variables Definition
+        #=======================================================================
         self.constraints_array = []
         self.cluster_order = []
         self.goals_in_cluster = []
@@ -86,12 +94,13 @@ class regions_delimiter(object):
         self.reordering_goals = []
         self.makespan_accumulated = np.zeros(len(self.robot_points_id))
         self.accumulative_goal = []
+        self.dist = {}
         for c in range(0,len(self.goal_order)):
             for count in range(0,len(self.final_allocation)):
                 if (self.goal_order[c] == self.final_allocation[count][0]):
                    self.cluster_order.append(self.final_allocation[count][1])
                    break
-        for n in range(0, len(self.centroids)):
+        for n in range(0, len(self.clus_index)):
             self.cluster_goals = []
             self.cluster_goals_wp = []
             for g in range(0, len(self.cluster_order)):
@@ -101,8 +110,11 @@ class regions_delimiter(object):
 
             self.goals_in_cluster.append(self.cluster_goals)
             self.goals_in_cluster_wp.append(self.cluster_goals_wp)
-
-        for cluster in range(0, len(self.new_centroids)):
+        #=======================================================================
+        # Calculates the number of solvable goals for each robot in different
+        # clusters
+        #=======================================================================
+        for cluster in range(0, len(self.clus_index)):
             for robot in range(0, len(self.tasks_index)):
                 total_goals = 0
                 self.allocated_goals = []
@@ -122,8 +134,11 @@ class regions_delimiter(object):
         for h in range(0, len(self.number_solvable_goals)):
             new_value = self.max_val - self.number_solvable_goals[h]
             self.set.append(new_value)
-
-        for i in range(0, len(self.new_centroids)):
+        #=======================================================================
+        # Implement the cluster assignment based on the number of goals
+        # achievable for each robot in the clusters
+        #=======================================================================
+        for i in range(0, len(self.clus_index)):
             self.reordering_first = []
             self.reordering_goals_first = []
             for u in range(0, len(self.robot)):
@@ -135,16 +150,20 @@ class regions_delimiter(object):
         cost = np.array(self.reordering)
         row_ind, col_ind = linear_sum_assignment(cost)
 
-        for n in range(0, len(self.new_centroids)):
+        for n in range(0, len(self.clus_index)):
             self.index_for_g.append(self.reordering_goals[row_ind[n]][col_ind[n]])
             self.waypoints_initial = []
             for r in range(0, len(self.goals_index)):
                 if self.goals_index[r] in self.reordering_goals[row_ind[n]][col_ind[n]]:
                     self.waypoints_initial.append(self.goal_order[r])
             self.waypoints.append(self.waypoints_initial)
-
+        #=======================================================================
+        # Calculates the distance between the robot allocated to a particular
+        #  cluster and the coordinates of the goals in the cluster.
+        # Assigns the first goal (the closest one in the cluster) to this robot
+        #=======================================================================
         self.dist_set_initial = []
-        for robot_coord in range(0, len(self.centroids)):
+        for robot_coord in range(0, len(self.clus_index)):
             r_point = np.array(self.robot_data_points[robot_coord])
             self.initial_point = r_point
             self.dist_set_initial = []
@@ -177,18 +196,31 @@ class regions_delimiter(object):
                        value = self.tasks_index[task]
                        curr = value.replace(str(self.goal_to_remove), "")
                        self.tasks_index[task] = curr
-
+        #=======================================================================
+        # Add the goal allocated to the list on allocated goals and removes it
+        # from the list of not allocated ones
+        #=======================================================================
         for constraints in range(0,len(self.new_centroids)):
             if not self.robot_points_id[constraints] in self.initial_robot_wp:
                 self.constraints_array.append([self.robot_name[constraints],self.robot_points_id[constraints]])
 
-    def goal_distribution(self):
+    def goal_allocation(self):
+        #=======================================================================
+        # Alloctes the goals in the non allocated goals list considering a cost
+        # function that combines goals makespan and distance
+        #=======================================================================
         self.makespan_accumulated = np.zeros(len(self.robot_points_id))
         self.accumulative_goal = []
+        #=======================================================================
+        # Implementation is running until all the goals are allocated
+        #=======================================================================
         for self.task_distribution in range(0,len(self.total_goals_no)):
             self.min_costfunc_value = []
             self.min_costfunc_index = []
             self.distance_values = {}
+            #===================================================================
+            # weights factor
+            #===================================================================
             alpha = 0.25
             beta = 0.20
             for goal_set_indx in range(0, len(self.goals_index)):
@@ -219,13 +251,19 @@ class regions_delimiter(object):
                     if self.initial_robot_wp[robot_indx] in self.robot_points_id:
                         self.costfunc.append(dist)
                     else:
+                        #=======================================================
+                        # Lineal cost function
+                        #=======================================================
                         t_aborted = count_redundant_goals * action_makespan
                         self.costfunc.append(alpha*(action_makespan + self.makespan_accumulated[robot_indx]) + (1 - alpha + beta)*dist + beta*(t_aborted/int(no_sensors)))
                 self.min_dist_index = np.argmin(self.costfunc)
                 self.min_dist_value = np.nanmin(self.costfunc)
                 self.min_costfunc_value.append(self.min_dist_value)
                 self.min_costfunc_index.append(self.min_dist_index)
-
+            #===================================================================
+            # Removes the allocated goal from the lsit and stores the makespan
+            # accumulate for the robot based on plan to date
+            #===================================================================
             self.min_of_min_indx = np.argmin(self.min_costfunc_value)
             self.min_of_min = np.nanmin(self.min_costfunc_value)
             self.alloc_robot_indx = self.min_costfunc_index[self.min_of_min_indx]
@@ -237,6 +275,9 @@ class regions_delimiter(object):
             self.robot_position_update()
 
     def robot_position_update(self):
+        #=======================================================================
+        # Robot position update to allocate the next goal
+        #=======================================================================
         self.robot_points_id[self.alloc_robot_indx] = self.final_goal
         index_coordinate_new_robot_pos = self.points_id.index(self.final_goal)
         self.robot_data_points[self.alloc_robot_indx] = self.data_points[index_coordinate_new_robot_pos]
@@ -250,9 +291,10 @@ class regions_delimiter(object):
                curr = value.replace(str(self.goal_to_remove), "")
                self.tasks_index[task] = curr
     def k_means(self):
-        '''
-        k_means implement the clustering of the goals based on the number of available robots
-        '''
+        #=======================================================================
+        # k_means implement the clustering of the goals based on the number
+        # of available robots
+        #=======================================================================
         self.final_allocation = []
         self.clus_index = []
         [self.cluster_label, self.new_centroids] = self.iterate_k_means()
@@ -260,9 +302,15 @@ class regions_delimiter(object):
         for self.final_iteration in range(0, self.total):
             self.final_allocation.append([self.points_id[self.final_iteration],self.final_cluster[self.final_iteration]])
             if not self.final_cluster[self.final_iteration] in self.clus_index:
+                #===============================================================
+                # Define the number of clusters were recognised
+                #===============================================================
                 self.clus_index.append(self.final_cluster[self.final_iteration])
 
     def iterate_k_means(self):
+        #=======================================================================
+        # Obtain an accurate value clusters centroids
+        #=======================================================================
         self.label = []
         self.cluster_label = []
         self.final_cluster = []
@@ -286,70 +334,22 @@ class regions_delimiter(object):
                     self.final_cluster.append(self.index_of_minimum)
         return [self.cluster_label, self.centroids]
 
-    def cluster_allocation(self):
-        self.clusters_allocated = []
-        self.robots_matched = []
-        self.clusters_matched = []
-        self.distance_set = []
-        self.cluster_index = []
-        self.robot_id = []
-        self.dist = {}
-        for centroids_coordinates in range(0, len(self.new_centroids)):
-            centroids_point = self.new_centroids[centroids_coordinates]
-            self.final_point = centroids_point
-            for robot_coordinates in range(0, len(self.robot_points_id)):
-                robot_points = self.robot_data_points[robot_coordinates]
-                self.initial_point = robot_points
-                self.dist[robot_coordinates] = self.compute_euclidean_distance()
-                self.distance_set.append(self.dist[robot_coordinates])
-                self.robot_id.append(robot_coordinates)
-                self.cluster_index.append(centroids_coordinates)
-
-        for items in range(0, len(self.distance_set)):
-            self.r = np.argmin(self.distance_set)
-            self.robot = self.robot_id[self.r]
-            self.argument = np.nanmin(self.distance_set)
-            if not self.robot_name[self.robot] in self.robots_matched and not self.cluster_index[self.r] in self.clusters_matched:
-                self.clusters_allocated.append([self.robot_name[self.robot], self.cluster_index[self.r]])
-                self.robots_matched.append(self.robot_name[self.robot])
-                self.clusters_matched.append(self.cluster_index[self.r])
-            self.distance_set.pop(self.r)
-            self.robot_id.pop(self.r)
-            self.cluster_index.pop(self.r)
-
-        for goal_allocation_constraint in range(0, len(self.final_allocation)):
-            goal_id = self.final_allocation[goal_allocation_constraint]
-            goal_id = str(goal_id)
-            curr = goal_id.find(",")+1
-            next = goal_id.find("]")
-            cluster_goal_id = goal_id[curr:next]
-            curr = goal_id.find("['")+2
-            next = goal_id.find(",")-1
-            goal_id = goal_id[curr:next]
-            for robot_name_constraint in range(0, len(self.clusters_allocated)):
-                robot_id = self.clusters_allocated[robot_name_constraint]
-                robot_id = str(robot_id)
-                curr = robot_id.find(",")+1
-                next = robot_id.find("]")
-                cluster_robot_id = robot_id[curr:next]
-                curr = robot_id.find("[")+2
-                next = robot_id.find(",")-1
-                robot_id = robot_id[curr:next]
-                if (cluster_goal_id == cluster_robot_id):
-                    self.constraints_array.append([robot_id, goal_id])
-
     def create_centroids(self):
+        #=======================================================================
+        # Generate a set of  initial centroids based on the number of robot_set
+        # available to implement the mission.
+        #=======================================================================
         self.centroids = []
         for self.number_robots in range(0, self.center_no):
             self.centroids.append([0.0, 0.0])
         return np.array(self.centroids)
 
     def load_data(self):
-        '''
-        load_data loads the data from waypoint, robot and goal files
-        input: (1) waypoint_file  (2) goals_file (3) robot_file
-        output: (1) goals_id and coordinates (2) robot_id and coordinates
-        '''
+        #=======================================================================
+        # Loads the data from waypoint, robot and goal files
+        # input: (1) waypoint_file  (2) goals_file (3) robot_file (4) redundancy
+        # output: (1) goals_id and coordinates (2) robot_id and coordinates
+        #=======================================================================
         self.data_points = []
         self.points_id = []
         self.robot_data_points = []
@@ -410,7 +410,9 @@ class regions_delimiter(object):
 
                         self.data_points.append([float(self.x_coord), float(self.y_coord)])
                         self.points_id.append(name)
-
+                #===============================================================
+                # Append the goals and robots data in different arrays
+                #===============================================================
                 robot_ifile = open(self.robot_file, "rw+")
                 robot_lines = 0
                 for robot_line in open(self.robot_file):
@@ -441,6 +443,9 @@ class regions_delimiter(object):
             print('Unable to read the indicated file')
 
     def load_cap_analyser_results(self):
+        #=======================================================================
+        # Load the results of the capabilities analysis
+        #=======================================================================
         self.tasks_index = []
         self.goal_redundancy = []
         for self.i_line in range(0, self.robots_number):
@@ -489,19 +494,34 @@ class regions_delimiter(object):
         self.total_goals_no = self.goals_index
 
     def load_makespan(self):
+        #=======================================================================
+        # Load the makespan associated with the implementation of each goal
+        #=======================================================================
         with open(str(self.mission_constrains_directory)+str(self.ontology_directory), 'r') as stream:
             self.makespan_list = yaml.safe_load(stream)
     def compute_euclidean_distance(self):
+        #=======================================================================
+        # Calculates the distance bween to points using th euclidean norm
+        #=======================================================================
         return np.sqrt(np.sum((self.initial_point - self.final_point)**2))
 
     def assign_label_cluster(self):
+        #=======================================================================
+        # Assigns a lable to a new cluster
+        #=======================================================================
         self.index_of_minimum = min(self.distance, key=self.distance.get)
         return [self.index_of_minimum, self.data_points[self.index_point], self.centroids[self.index_of_minimum]]
 
     def compute_new_centroids(self):
+        #=======================================================================
+        # Compute new centroids based on the position of previos centriod
+        #=======================================================================
         return np.array(self.label[1] + self.centroids[self.label[0]])/2
 
     def save_goals(self):
+        #=======================================================================
+        # Save mission goals allocated to each robot in a .txt format
+        #=======================================================================
         self.allocation_results = []
         for goal_allocation_constraint in range(0, len(self.constraints_array)):
             line = self.constraints_array[goal_allocation_constraint]
@@ -511,8 +531,16 @@ class regions_delimiter(object):
             final = robot_id.find("']")
             robot_name = robot_id[curr:next-1]
             goal_name = robot_id[next+3:final]
+            #==================================================================
+            # add a fact set using a PDDL instance definition that we use in the
+            # domain. Tese instances restric the implemntation of the goals to
+            # a particular robot
+            #===================================================================
             self.allocation_statement = "(robot_can_act" + " " +str(robot_name)+" "+str(goal_name)+")"
             self.allocation_results.append(self.allocation_statement)
+        #=======================================================================
+        # Stores the facts generated
+        #=======================================================================
         self.allocation_data = open(str(self.mission_constrains_directory)+ 'allocation_solution.txt', 'w+')
         for data_storage in range(0, len(self.allocation_results)):
             self.allocation_data.write(str(self.allocation_results[data_storage])+ '\n')
@@ -520,6 +548,9 @@ class regions_delimiter(object):
         self.allocation_finished = True
 
 if __name__ == '__main__':
+    #===========================================================================
+	# Main method
+	#===========================================================================
     try:
         regions_delimiter = regions_delimiter()
         rospy.spin()

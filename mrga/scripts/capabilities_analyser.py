@@ -10,28 +10,32 @@ import cv2
 import time
 import re
 import yaml
+import csv
 from std_msgs.msg import String
 from linecache import getline
 from std_srvs.srv import Empty, EmptyResponse
 from mrga_msgs.srv import CapabilityAnalyser, CapabilityAnalyserResponse
 
-# Import the library to read csv
-import csv
+
 
 class capabilities_analyser(object):
 
     def __init__(self):
-        '''
-        constructor
-        '''
+        #=======================================================================
+        # constructor
+        #=======================================================================
         rospy.init_node('capabilities_analyser')
         rospy.Service('capabilities_analyser', CapabilityAnalyser, self.serviceCall)
-
-        # Has the goal been loaded?
+        #=======================================================================
+        # Initialisation
+        #=======================================================================
         self.capabilities_recognised = False
         self.goals_indx_allocated = False
 
     def serviceCall(self, req):
+        #=======================================================================
+        # System inputs to implement the capability analysis
+        #=======================================================================
         self.goals_file = req.goals_file
         self.robot_file = req.robot_file
         self.mission_constrains_directory = rospy.get_param('~mission_constrains_directory')
@@ -70,12 +74,13 @@ class capabilities_analyser(object):
 
 
     def load_capabilities(self):
-        '''
-        load_capabilities loads the goal and robot capabilities from the file to find the sets of robots
-        that can do a particular task.
-        input: robot_file and goals_file
-        output: index of the possible tasks to be implemented for the robot
-        '''
+        #=======================================================================
+        # Loads the goal and robot capabilities from the file to find the
+        # sets of robots that can do a particular task and the redundancy in the
+        # sensor system to implement each goal in case of failures.
+        # input: robot_file and goals_file redundancy
+        # output: index of the possible tasks to be implemented for the robot
+        #=======================================================================
         try:
             print('Reading file %s' %self.goals_file)
             goals_ifile = open(self.goals_file, "rw+")
@@ -126,11 +131,17 @@ class capabilities_analyser(object):
             self.capabilities_recognised = True
         except:
             print('Unable to read the indicated file')
+    #===========================================================================
+    # load the redundancy associated with the goals
+    #===========================================================================
     def load_goals_cap_ontology(self):
         with open(str(self.mission_constrains_directory)+str(self.ontology_directory), 'r') as stream:
             self.ontology_list = yaml.safe_load(stream)
 
 if __name__ == '__main__':
+    #===========================================================================
+	# Main method
+	#===========================================================================
     try:
         capabilities_analyser = capabilities_analyser()
         rospy.spin()

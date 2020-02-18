@@ -23,8 +23,4 @@
 		<param name="mission_constrains_directory"    value="$(find mrga)/config/" />
 		<param name="ontology_directory"              value="$(arg ontology)" />
 	</node>
-
-	<node name="facts_allocation" pkg="mrga" type="facts_allocation.py" respawn="false" output="screen">
-		<param name="mission_constrains_directory"       value="$(find mrga)/config/" />
-	</node>
 </launch>
