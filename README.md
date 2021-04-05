@@ -4,6 +4,8 @@ This repository contains the ROS-MRGA code, the domain and problems used in:
 
 "Task Allocation Strategy for Heterogeneous Robot Teams in Offshore Missions"
 
+Important: This is a simplified version of the algorithm. If you need the full version, please contant the authors.
+
 The implementation is devided in two parts:
 
 
