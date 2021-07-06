@@ -1734,14 +1734,14 @@
 )
 (:goal
     (and
+    (valve_inspected wpg31)
+    (valve_inspected wpg35)
     (valve_turned wpg31)
     (valve_turned wpg35)
     (pressure_sensed wpg52)
     (temperature_sensed wpg34)
     (image_captured wpa20)
     (image_captured wpa21)
-    (valve_inspected wpg31)
-    (valve_inspected wpg35)
     (valve_manip_recorded wpa31)
     (valve_manip_recorded wpa35)
     )
